@@ -2,3 +2,7 @@
 *.o
 tmp*
 calc.exe
+*.cmi
+*.cmo
+.merlin
+_build
