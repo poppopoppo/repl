@@ -2,11 +2,14 @@
 (* The type of tokens. *)
 
 type token = 
+  | VAL of (string)
   | R_INGR
   | R_DIREC
   | RECIPE
+  | PLUS
   | OPER of (string)
   | NUM of (int)
+  | MULT
   | L_INGR
   | L_DIREC
   | ITEM of (string)

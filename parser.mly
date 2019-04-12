@@ -12,8 +12,9 @@ let ax_ope = [
 %}
 
 %token L_INGR R_INGR RECIPE L_DIREC R_DIREC
-%token <string> ITEM OPER
+%token <string> ITEM OPER VAL
 %token <int> NUM
+%token PLUS MULT
 %token EOF
 
 %start buffer
@@ -40,7 +41,15 @@ item_list:
   | ITEM item_list { ($1::$2) }
   ;
 operator:
-  | OPER { $1 }
-  | OPER operator { ($1^" "^$2) }
-  | NUM { (string_of_int $1) }
+  | OPER  { Ascii $1 }
+  | calc_list { Calc $1 }
   ;
+calc_list:
+  | calc  { [$1] }
+  | calc calc_list { $1::$2 }
+  ;
+calc:
+  | PLUS calc calc { Plus ($2,$3) }
+  | MULT calc calc  { Mult ($2,$3) }
+  | VAL { Item $1 }
+  | NUM { Num $1 }
