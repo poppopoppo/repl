@@ -1,11 +1,11 @@
-all: calc.o
-run: calc.o
-	./calc.o
-calc.o: parser.mly lexer.mll calc.ml
+all: calc.exe
+run: calc.exe
+	_build/default/calc.exe
+calc.exe: env.ml parser.mly lexer.mll calc.ml Makefile
+	ocamlc -c env.ml
 	ocamllex lexer.mll
 	menhir parser.mly
 	ocamlc -c parser.mli
 	ocamlc -c lexer.ml
 	ocamlc -c parser.ml
-	ocamlc -c calc.ml
-	ocamlc -o calc.o lexer.cmo parser.cmo calc.cmo
+	dune build calc.exe

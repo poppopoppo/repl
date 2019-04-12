@@ -3,37 +3,31 @@ type state = int State.t
 exception Error of string
 let (gl_st:state) = State.empty
 let new_state () = State.empty
-type item =
-  | Item of string
-  | Num of int
 type command = {
-    src : item list;
+    src : string list;
     dest : string list;
     ope : string
   }
 let consume k m =
   try
     let v = State.find k m in
-  let m' = State.remove k m in
+    let m' = State.remove k m in
     (v,m')
-  with Not_found -> raise @@ Error ("error: ?"^k^" is not exist")
+  with Not_found -> raise @@ Error ("error: ¿"^k^" is not exist")
 let create (k,v) m =
   try
     let _ = State.find k m in
-    raise @@ Error ("error: ?"^k^" is allready exist")
+    raise @@ Error ("error: ¿"^k^" is allready exist")
   with Not_found ->
     let m' = State.add k v m in
     m'
 let rec consumes l m =
   match l with
   | [] -> ([],m)
-  | (Item i)::tl ->
+  | i::tl ->
     let (v,m') = consume i m in
     let (l',m'') = consumes tl m' in
     (v::l',m'')
-  | (Num n)::tl ->
-    let (l',m') = consumes tl m in
-    (n::l',m')
 let rec creates l m =
   match l with
   | [] -> m
