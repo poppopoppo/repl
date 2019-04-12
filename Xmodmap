@@ -1,0 +1,49 @@
+remove mod2 = Num_Lock
+remove shift = Shift_L
+remove shift = Shift_R
+
+keycode 66 = Muhenkan
+keycode 65 = space
+keycode 100 = Shift_R
+keycode 102 = Mode_switch
+keycode 50 = Shift_L
+
+keycode 24 = q Q q Q
+keycode 44 = j J 4
+keycode 45 = k K 5 question
+keycode 46 = l L 6 parenright
+keycode 58 = m M 1 exclam
+keycode 59 = comma less 2 quotedbl
+keycode 60 = period greater 3 numbersign
+keycode 30 = u U 7
+keycode 31 = i I 8
+keycode 32 = o O 9
+
+keycode 39 = s S parenleft
+keycode 40 = d D equal
+keycode 41 = f F parenright
+keycode 25 = w W exclam
+keycode 26 = e E quotedbl
+keycode 27 = r R numbersign
+keycode 53 = x X dollar
+keycode 54 = c C percent
+keycode 55 = v V ampersand
+
+
+keycode 79 = U220F
+keycode 80 = U2206
+keycode 81 = U2210
+keycode 82 = U22BB
+keycode 83 = U22BC
+keycode 84 = U00A7
+keycode 85 = U220E
+keycode 86 = U2211
+keycode 87 = UFF62
+keycode 88 = U2207
+keycode 89 = UFF63
+keycode 90 = U2245
+keycode 91 = U2203
+keycode 104 = U2200
+
+add shift = Shift_L
+add shift = Shift_R
