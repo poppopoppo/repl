@@ -41,7 +41,7 @@ item_list:
   | ITEM item_list { ($1::$2) }
   ;
 operator:
-  | OPER  { Ascii $1 }
+(*  | OPER  { (Env.pnt ("OPER"^$1));Ascii $1 }*) 
   | calc_list { Calc $1 }
   ;
 calc_list:

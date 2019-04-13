@@ -1,5 +1,5 @@
-type create_flg = Strict | Override
-let create_flg = Strict
+type create_flg = Strict | Forgetable
+let create_flg = Forgetable
 let debug_flg = ref true
 let pnt s = if !debug_flg=true then print_string s;flush stdout
 
@@ -16,7 +16,7 @@ and calc_num =
   | Mult of (calc_num * calc_num)
   | Num of int
   | Item of string
-        [@@ deriving show]
+[@@ deriving show]
 let rec calc l c =
   match c with
   | Plus (o1,o2) -> (calc l o1) + (calc l o2)
@@ -25,11 +25,11 @@ let rec calc l c =
   | Item i -> List.assoc i l
 
 type command = {
-    src : string list;
-    dest : string list;
-    ope : ope
+  src : string list;
+  dest : string list;
+  ope : ope
 }
-    [@@ deriving show]
+[@@ deriving show]
 let consume k m =
   try
     let v = State.find k m in
@@ -37,12 +37,13 @@ let consume k m =
     (v,m')
   with Not_found -> raise @@ Error ("error: ¿"^k^" is not exist")
 let create (k,v) m =
-  try
-    let _ = State.find k m in
-    raise @@ Error ("error: ¿"^k^" is allready exist")
-  with Not_found ->
-    let m' = State.add k v m in
-    m'
+  match create_flg with
+  | Strict ->
+    (try
+       let _ = State.find k m in
+       raise @@ Error ("error: ¿"^k^" is allready exist")
+     with Not_found -> State.add k v m)
+  | Forgetable -> State.add k v m
 let peek k st =
   try
     let v = State.find k st in
@@ -70,23 +71,44 @@ let rec find_l k l =
 let exec_command c st =
   try
     let (src,dst,op) = (c.src,c.dest,c.ope) in
-  let (l,st') = consumes src st in
-  let result = match op with
-    | Ascii _ -> []
-    | Calc c ->
-      let r = List.map (calc l) c in
-      List.combine dst r in
-  let st'' = creates result st' in
+    let (l,st') = consumes src st in
+    let result = match op with
+      | Ascii _ -> []
+      | Calc c ->
+        let r = List.map (calc l) c in
+        List.combine dst r in
+    let st'' = creates result st' in
     st''
-  with Invalid_argument s -> raise @@ Error s 
+  with Invalid_argument s -> raise @@ Error s
 
 
 let print_st st =
   let _ = print_string "state # ";flush stdout in
   let _ = State.iter
-    (fun k v ->
-      print_string ("?"^k^"="^(string_of_int v)^",");
-      flush stdout )
-    st in
+      (fun k v ->
+         print_string ("¿"^k^"="^(string_of_int v)^",");
+         flush stdout )
+      st in
   let _ = print_string "\n";flush stdout in
   ()
+
+let load (s:string) : state =
+  try
+    let reg = Str.regexp ".+\\.st" in
+    if (Str.string_match reg s 0)
+    then
+      let f = open_in s in
+      let s0 = Marshal.from_channel f  in
+      let _ = close_in f in
+      let _ = Sys.remove s in
+      s0
+    else raise @@ Error ("error:load: can't load "^s^". file prefix need to be st")
+  with | Error err -> raise @@ Error err
+       | err -> pnt "error:load\n"; raise err
+let save (st:state) s =
+  let reg = Str.regexp ".+\\.st" in
+  if (Str.string_match reg s 0)
+  then let f = open_out s in
+    let _ = Marshal.to_channel f st [] in
+    ()
+  else raise @@ Error "error:load: can't save to s. file prefix need to be st"

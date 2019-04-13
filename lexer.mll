@@ -19,12 +19,12 @@ rule token = parse
     | "\226\138\162" (* ⊢ *)           { R_DIREC                                }
     | "\194\191" (* ¿ *) (alnum+ as lxm) { ITEM (lxm)                  }
 
-    | '+' { PLUS }
+    | "+" { PLUS }
     | '*' { MULT }
-    | '?' (alnum+ as lxm) { VAL(lxm) }
+    | "?" (alnum+ as lxm) { VAL(lxm) }
     | (digit+ as lxm)  { NUM (int_of_string lxm) }
 
-    | ascii+ as lxm { OPER (lxm)}
+(*    | ascii+ as lxm { OPER (lxm)} *)
     | space+        { token lexbuf                         }
     | eof           { EOF                                  }
     | _             { raise (Error (Printf.sprintf
