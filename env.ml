@@ -15,19 +15,19 @@ and calc_num =
   | Plus of (calc_num * calc_num)
   | Mult of (calc_num * calc_num)
   | Num of int
-  | Item of string
+  | Val of int
 [@@ deriving show]
 let rec calc l c =
   match c with
   | Plus (o1,o2) -> (calc l o1) + (calc l o2)
   | Mult (o1,o2) -> (calc l o1) * (calc l o2)
   | Num n -> n
-  | Item i -> List.assoc i l
+  | Val i -> snd @@ List.nth l i
 
 type command = {
-  src : string list;
-  dest : string list;
-  ope : ope
+  mutable src : string list;
+  mutable dest : string list;
+  mutable ope : ope
 }
 [@@ deriving show]
 let consume k m =

@@ -2,18 +2,17 @@
 (* The type of tokens. *)
 
 type token = 
-  | VAL of (string)
+  | VAL of (int)
   | R_INGR
-  | R_DIREC
   | RECIPE
   | PLUS
   | OPER of (string)
   | NUM of (int)
   | MULT
   | L_INGR
-  | L_DIREC
   | ITEM of (string)
   | EOF
+  | DIREC
 
 (* This exception is raised by the monolithic API functions. *)
 

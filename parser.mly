@@ -11,9 +11,9 @@ let ax_ope = [
 *)
 %}
 
-%token L_INGR R_INGR RECIPE L_DIREC R_DIREC
-%token <string> ITEM OPER VAL
-%token <int> NUM
+%token L_INGR R_INGR RECIPE DIREC
+%token <string> ITEM OPER
+%token <int> NUM VAL
 %token PLUS MULT
 %token EOF
 
@@ -25,23 +25,30 @@ buffer:
 
   ;
 command:
-  | RECIPE L_INGR L_DIREC operator { {src=[];dest=[];ope=$4} }
-  | RECIPE operator R_DIREC R_INGR {  {src=[];dest=[];ope=$2} }
-  | RECIPE L_INGR item_list L_DIREC operator { {src=[];dest=$3;ope=$5} }
-  | RECIPE item_list L_INGR L_DIREC operator {  {src=$2;dest=[];ope=$5} }
-  | RECIPE operator R_DIREC R_INGR item_list {  {src=$5;dest=[];ope=$2} }
-  | RECIPE operator R_DIREC item_list R_INGR {  {src=[];dest=$4;ope=$2} }
-  | RECIPE item_list L_INGR item_list L_DIREC operator
-      {  {src=$2;dest=$4;ope=$6} }
-  | RECIPE operator R_DIREC item_list R_INGR item_list
-      {  {src=$6;dest=$4;ope=$2} }
+  | RECIPE sign DIREC operator { $2.ope<-$4;$2 }
+  | RECIPE operator DIREC sign { $4.ope<-$2;$4 }
   ;
+sign:
+  | l_ingr    { {src=$1;dest=[];ope=Ascii ""} }
+  | r_ingr  { {src=$1;dest=[];ope=Ascii ""} }
+  | l_ingr item_list  { {src=$1;dest=$2;ope=Ascii ""} }
+  | item_list r_ingr  { {src=$2;dest=$1;ope=Ascii ""} }
+  ;
+l_ingr:
+  | L_INGR  { [] }
+  | item_list L_INGR  { $1 }
+  ;
+r_ingr:
+  | R_INGR  { [] }
+  | R_INGR item_list  { $2 }
+
 item_list:
   | ITEM   { [$1] }
   | ITEM item_list { ($1::$2) }
   ;
+
 operator:
-(*  | OPER  { (Env.pnt ("OPER"^$1));Ascii $1 }*) 
+(*  | OPER  { (Env.pnt ("OPER"^$1));Ascii $1 }*)
   | calc_list { Calc $1 }
   ;
 calc_list:
@@ -51,5 +58,5 @@ calc_list:
 calc:
   | PLUS calc calc { Plus ($2,$3) }
   | MULT calc calc  { Mult ($2,$3) }
-  | VAL { Item $1 }
+  | VAL { Val $1 }
   | NUM { Num $1 }

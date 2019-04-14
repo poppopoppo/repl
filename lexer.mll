@@ -13,16 +13,16 @@ let alnum = digit | alpha
 
 rule token = parse
     | "\194\167"  (* § *) { RECIPE }
-    | "\194\187" (* » *)  { L_INGR                            }
-    | "\194\171" (* « *)  { R_INGR                                  }
-    | "\226\138\163" (* ⊣ *)           { L_DIREC                                }
-    | "\226\138\162" (* ⊢ *)           { R_DIREC                                }
+    | "\194\187" (* » *)  { DIREC                            }
+(*    | "\194\171" (* « *)  { R_DIREC                                 } *)
+    | "\226\138\163" (* ⊣ *)           { R_INGR                                }
+    | "\226\138\162" (* ⊢ *)           { L_INGR             }
     | "\194\191" (* ¿ *) (alnum+ as lxm) { ITEM (lxm)                  }
 
     | "+" { PLUS }
     | '*' { MULT }
-    | "?" (alnum+ as lxm) { VAL(lxm) }
-    | (digit+ as lxm)  { NUM (int_of_string lxm) }
+    | "?" (digit+ as lxm) { VAL(int_of_string lxm) }
+    | (('-' digit+)|digit+) as lxm  { NUM (int_of_string lxm) }
 
 (*    | ascii+ as lxm { OPER (lxm)} *)
     | space+        { token lexbuf                         }
