@@ -1,0 +1,90 @@
+§ ⊢ ¿y » 90
+§ » 10 ⊢ ¿q
+
+§ ⊢ ¿ri ¿ro » PRN
+§ ⊢ ¿ai ¿ao » PRN
+§ ⊢ ¿xi ¿xo » PRN
+§ ¿xo ⊢ ¿xo0 ¿xo1 ¿xo2 » RPL
+§ ¿ai ⊢ ¿ax ¿ar » ?0 1
+§ ¿ax ¿xo0 ⊢ » ANH
+§ ¿xi1 ⊢ ¿b » ZRO
+§ ¿b
+  | » yes
+    § ¿ri ¿ao » ANH
+  | » no
+    § ¿ri ¿xi2 ⊢ ¿ri ¿xi2 » (?0 + -1) (?0 * ?1)
+    § ¿ri ¿ro » ANH
+    § ¿xi2 ¿xo » ANH
+
+stt # cst:¿a out.cst:¿y
+§ ¿xo ¿ro ¿xi ⊢ ¿xo0 ¿xo1 ¿xo2 ¿ro0 ¿ro1 ¿xi0 ¿xi1 » ?0 ?0 ?0 ?1 ?1 ?2 ?2
+§ ¿a ¿ro0 ¿xo0 ⊢ _ _ » 1>?1 ?0>?2
+§ ¿xi0 ⊢ ¿b » ZRO
+§ ¿b
+  | _ » yes
+    § ¿ri ¿y ⊢ _ » ?0>?1
+  | _ » no
+    § ¿ri ¿xi2 ⊢ ¿ri ¿xi2 » (?0 + -1) (?0 * ?1)
+    § ¿ri ¿ro ¿xi2 ¿xo ⊢ _ _ » ?0>?1 ?2>?3
+§ ¿b ⊢ _ | _ » yes | no
+§ ¿ri ¿y | ⊢ _ | » ?0>?1
+§
+
+stt # cst:¿a -.cst:¿y
+§ ⊢ {¿xo ¿x} {¿ro ¿ri} » ± ±
+§ ¿a ¿ro ¿xo ¿xi ⊢ _ _ ¿ro ¿xo ¿xi0 ¿xi » 1>?1 ?0>2 ?1 ?2 ?3 ?3
+§ ¿xi0
+  | _ » YES
+    § ¿ri ¿y ⊢ _ » ?0>?1
+  | _ » NO
+    § ¿ri ¿xi ⊢ ¿ri ¿xi » (?0 + -1) (?0 * ?1)
+    § ¿ri ¿ro ¿xi ¿xo ⊢ _ _ » ?0>?1 ?2>?3
+
+§ ⊢ ¿mi ¿mo » ±{Z Z}
+§ ¿a ¿mo ¿mi ⊢ _ ¿mo ¿mi ¿b » {?0 1}>?1 ?1 ?2 ?2.?0
+§ ¿b
+| _ » YES
+  § ¿mi ¿y ⊢ _ » ?0.?1>?1
+| _ » NO
+  § ¿mi ⊢ ¿mi » {(?0.?0 + -1) (?0.?1 * ?1)}
+  § ¿mi ¿mo ⊢ _ » {?0>?1}
+
+
+stt # cst:¿a -.cst:¿y
+§ ⊢ {¿xo ¿x} {¿ro ¿ri} » ± ±
+§ ¿a ¿ro ¿xo ¿xi ⊢ _ _ ¿ro ¿xo ¿xi0 ¿xi » 1>?1 ?0>2 ?1 ?2 ?3 ?3
+§ ¿xi0 ⊢ [ _ | _ ] » _
+[
+  § ¿ri ¿y ⊢ _ » ?0>?1
+|
+  § ¿ri ¿xi ⊢ ¿ri ¿xi » (?0 + -1) (?0 * ?1)
+  § ¿ri ¿ro ¿xi ¿xo ⊢ _ _ » ?0>?1 ?2>?3
+]
+
+stt # int:¿a out.int:¿y
+ § ⊢ ¿f »
+
+§ ⊢ ¿xi ¿xo » ±
+§ ¿xi ¿xo ⊢ ¿y|{¿xi ¿xo} » f
+§
+
+¿r ¿x » cyc
+§ ¿r ¿x ⊢ ¿r ¿x » (?0 + -1) (?0 * ?1)
+§ ¿r ⊢ ¿r ¿b » ?0 ?0
+§ ¿b
+  | _ » yes
+    RTN ¿x
+  | _ » no
+    CYC ¿r ¿x » cyc
+
+r x OPR cyc
+SEC r x ⊢ r x »
+
+¦ r x y » cyc
+  § r x ⊢ r x » (r + -1) (r * x)
+  § r ⊢ r b » r r
+  ∠ b
+    | § x y ⊢ _ » x>y
+    | ¦ r x y » cyc
+
+§ src 
