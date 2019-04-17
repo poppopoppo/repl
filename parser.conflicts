@@ -1,0 +1,37 @@
+
+** Conflict (shift/reduce) in state 133.
+** Tokens involved: TEST RCP OBS FRK CYC
+** The following explanations concentrate on token TEST.
+** This state is reached from program after reading:
+
+FRK FRK prg_list FOR 
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+fork 
+FRK prg_list forks 
+    (?)
+
+** In state 133, looking ahead at TEST, shifting is permitted
+** because of the following sub-derivation:
+
+program_command EOF 
+fork 
+FRK prg_list forks 
+             fork_proc 
+             FOR prg_list 
+                 program_command EOF 
+                 fork 
+                 . TEST 
+
+** In state 133, looking ahead at TEST, reducing production
+** fork_proc -> FOR 
+** is permitted because of the following sub-derivation:
+
+program_command prg_list // lookahead token appears because prg_list can begin with TEST
+fork // lookahead token is inherited
+FRK prg_list forks // lookahead token is inherited
+             fork_proc // lookahead token is inherited
+             FOR . 

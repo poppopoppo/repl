@@ -13,17 +13,22 @@ let alnum = digit | alpha
 
 rule token = parse
     | "\194\167"  (* § *) { RCP }
+
     | "\194\187" (* » *)  { R_OPR                            }
     | "\194\171" (* « *)  { L_OPR                                 }
+
+  (*  ▸◂◀◀ ▶ »«  *)
     | "\226\138\163" (* ⊣ *) { R_SRC                                }
     | "\226\138\162" (* ⊢ *) { L_SRC             }
     | "\194\191" (* ¿ *) (alnum+ as lxm) { ITM (lxm)                  }
-
-    | "\226\134\150"      (* ↖ *) { PRN }
-    | "\226\134\152"     (* ↘ *) { ANH }
-    | "\226\136\134"     (* ∆ *) { RPL }
-    | "\226\136\135"    (* ∇ *) { SPP }
-    | "\226\138\149"    (* ⊕ *) { SUM }
+    | "PRN" { PRN }
+    | "CNC_L" { CNC_L }
+    | "CNC_R" { CNC_R }
+    | "FRK"   { FRK }
+    | "OR"  { OR }
+    | "FOR" { FOR }
+    | "TEST"  { TEST }
+(*    | "\226\138\149"    (* ⊕ *) { SUM } *)
     | '(' { L_PRN }
     | ')' { R_PRN }
     | "+" { PLS }
@@ -31,7 +36,7 @@ rule token = parse
     | "?" (digit+ as lxm) { VAL(int_of_string lxm) }
     | (('-' digit+)|digit+) as lxm  { NUM (int_of_string lxm) }
 
-(*    | ascii+ as lxm { OPER (lxm)} *)
+    | ascii+ as lxm { OPER (lxm)}
     | space+        { token lexbuf                         }
     | eof           { EOF                                  }
     | _             { raise (Error (Printf.sprintf

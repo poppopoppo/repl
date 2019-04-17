@@ -80,11 +80,11 @@ stt # int:¿a out.int:¿y
 r x OPR cyc
 SEC r x ⊢ r x »
 
-¦ r x y » cyc
+⋔ r x » cyc
   § r x ⊢ r x » (r + -1) (r * x)
   § r ⊢ r b » r r
   ∠ b
-    | § x y ⊢ _ » x>y
-    | ¦ r x y » cyc
+    ∐ RTN y
+    ∐ CYC r x » cyc
 
-§ src 
+§ src |

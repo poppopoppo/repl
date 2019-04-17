@@ -11,7 +11,8 @@ let ax_ope = [
 *)
 %}
 
-%token L_SRC R_SRC RCP L_PRN R_PRN L_OPR R_OPR PRN ANH RPL SPP SUM
+%token L_SRC R_SRC RCP L_PRN R_PRN R_OPR L_OPR PRN
+%token OR CYC FOR FRK OBS CNC_L CNC_R TEST
 %token <string> ITM OPER
 %token <int> NUM VAL
 %token PLS MLT
@@ -19,24 +20,112 @@ let ax_ope = [
 
 %left PLS
 %left MLT
-%start buffer code
+%left CNC_L CNC_R
+%start buffer code program
 %type <Env.command> buffer
 %type <Env.command list> code
+%type <unit> program
 
 %%
-(*
-program:
-  |
-*)
 code:
-  | RCP command EOF { [$2] }
-  | RCP command code { $2::$3 }
+  | command EOF { (* [$2] *) [{src=[];dest=[];ope=[]}] }
+  | command code { (* $2::$3 *) [{src=[];dest=[];ope=[]}]}
   ;
 buffer:
-  | RCP  command EOF { $2 }
+  | command EOF { {src=[];dest=[];ope=[]} }
 (*  | flow EOF { $1 } *)
   ;
+abrb:
+  | { }
+  ;
+program:
+  | fork {}
+  ;
+prg_list:
+  | program_command EOF {}
+  | program_command prg_list {}
+  ;
+program_command:
+  | RCP command_std {}
+  | observe {}
+  | fork {}
+  | cycle {}
+  ;
+observe:
+  | OBS ITM obs_list {}
+  ;
+obs_list:
+  | or_atom prg_list {}
+  | or_atom prg_list obs_list {}
+  ;
+
+fork:
+  | TEST {}
+  | FRK prg_list forks  {}
+(*  | FRK fork_atom prg_list {}
+  | FRK fork_atom forks  {}
+  *)
+  ;
+forks:
+  | fork_proc {}
+  | fork_proc forks {}
+  ;
+fork_proc:
+  | FOR {}
+  | FOR prg_list {}
+  | FOR fork_atom prg_list {}
+  ;
+cycle:
+  | CYC fork_atom {}
+  ;
 command:
+  | RCP command_std  {}
+  | OBS command_observe  {}
+  | command_fork  {}
+  | CYC command_cycle  {}
+  ;
+command_std:
+  | L_SRC   {}
+  | R_SRC {}
+  | items L_SRC {}
+  | R_SRC items {}
+  | L_SRC m_ope items {}
+  | L_SRC items r_ope {}
+  | l_ope items R_SRC {}
+  | items m_ope R_SRC {}
+  | items m_ope L_SRC items {}
+  | items m_ope R_SRC items {}
+  | l_ope items L_SRC items {}
+  | l_ope items R_SRC items {}
+  | items L_SRC m_ope items {}
+  | items R_SRC m_ope items {}
+  | items L_SRC items r_ope {}
+  | items R_SRC items r_ope {}
+  ;
+items:
+  | ITM   { [$1] }
+  | ITM items { ($1::$2) }
+  ;
+m_ope:
+  | ope_list L_OPR  {}
+  ;
+r_ope:
+  | R_OPR ope_list  {}
+  | R_OPR ope_list L_OPR  {}
+  ;
+l_ope:
+  | ope_list L_OPR  {}
+  | R_OPR ope_list L_OPR  {}
+  ;
+ope_list:
+  | ope_atom  {}
+  | ope_atom ope_list {}
+  ;
+(*
+  | src_dst { $1 }
+  | dst_src { $1 }
+  ;
+  *)
   (*
     § o « s ⊢ d
     § o « d ⊣ s
@@ -49,66 +138,51 @@ command:
     § d ⊣ s » o
     § d  ⊣ o « s
   *)
-  | operator L_OPR signe  { ($3.ope<-$1;$3) }
-  | R_OPR operator r_src  { {src=$3;dest=[];ope=$2} }
-  | item_list R_OPR operator r_src  { {src=$4;dest=$1;ope=$3} }
-  | R_OPR operator r_dst  { {src=[];dest=$3;ope=$2} }
-  | item_list R_OPR operator r_dst  { {src=$1;dest=$4;ope=$3} }
-  | l_src R_OPR operator  { {src=$1;dest=[];ope=$3} }
-  | l_src item_list R_OPR operator  { {src=$1;dest=$2;ope=$4} }
-  | l_src operator L_OPR  { {src=$1;dest=[];ope=$2} }
-  | l_src operator L_OPR item_list { {src=$1;dest=$4;ope=$2} }
-  | l_dst R_OPR operator  { {src=[];dest=$1;ope=$3} }
-  | l_dst item_list R_OPR operator  { {src=$2;dest=$1;ope=$4} }
-  | l_dst operator L_OPR  { {src=$1;dest=[];ope=$2} }
-  | l_dst operator L_OPR item_list  { {src=$1;dest=$4;ope=$2} }
-  | l_src R_OPR
-  | l_src L_OPR
-  | l_src
-  | L_OPR l_src
-  | r_src R_OPR
-  | L_OPR r_src
-  | r_src ;
-l_dst:
-  | R_SRC  { [] }
-  | item_list R_SRC  { $1 }
+command_observe:
+  | ITM cmd_obs_list  {}
   ;
-r_dst:
-  | L_SRC  { [] }
-  | L_SRC item_list  { $2 }
+cmd_obs_list:
+  | or_atom  {}
+  | or_atom cmd_obs_list  {}
   ;
-signe:
-  | l_src    { {src=$1;dest=[];ope=Ascii ""} }
-  | r_src   { {src=$1;dest=[];ope=Ascii ""} }
-  | l_src item_list  { {src=$1;dest=$2;ope=Ascii ""} }
-  | item_list r_src  { {src=$2;dest=$1;ope=Ascii ""} }
+or_atom:
+  | OR  {}
+  | OR R_OPR OPER  {}
+  | OR R_OPR OPER L_OPR  {}
+  | OR items R_OPR OPER  {}
+  | OR items R_OPR OPER L_OPR  {}
+  | OR R_OPR OPER L_OPR items  {}
   ;
-l_src:
-  | L_SRC  { [] }
-  | item_list L_SRC  { $1 }
+command_fork:
+  | FRK fork_list  {}
+  | FRK fork_atom  {}
+  | FRK fork_atom fork_list  {}
   ;
-r_src:
-  | R_SRC  { [] }
-  | R_SRC item_list  { $2 }
+fork_list:
+  | FOR  {}
+  | FOR fork_atom  {}
+  | FOR fork_list  {}
+  | FOR fork_atom fork_list  {}
   ;
-item_list:
-  | ITM   { [$1] }
-  | ITM item_list { ($1::$2) }
+fork_atom:
+  | items R_OPR OPER  {}
+  | items R_OPR OPER L_OPR  {}
+  | items  {}
+  | R_OPR OPER L_OPR items  {}
+  | items L_SRC items R_OPR OPER  {}
   ;
-
-operator:
-(*  | OPER  { (Env.pnt ("OPER"^$1));Ascii $1 }*)
-  | calc_list { Calc $1 }
-  | PRN     { Prn }
-  | ANH { Anh }
-  | RPL   { Rpl }
-  | SPP     { Spp }
+command_cycle:
+  | items R_OPR OPER  {}
+  | items R_OPR OPER L_OPR  {}
+  | R_OPR OPER L_OPR  {}
   ;
-calc_list:
-  | calc  { [$1] }
-  | calc calc_list { $1::$2 }
+ope_atom:
+  | calc { Calc $1 }
   ;
 calc:
+  | PRN { Cst 0 }
+  | calc CNC_L calc { Cst 0 }
+  | calc CNC_R calc { Cst 0 }
   | L_PRN calc R_PRN  { $2 }
   | calc PLS calc { Plus ($1,$3) }
   | calc MLT calc  { Mult ($1,$3) }

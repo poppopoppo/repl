@@ -12,9 +12,10 @@ type lc_stt =
   | Plus of (lc_stt * lc_stt)
   | Mult of (lc_stt * lc_stt)
   | Val of int
+  | Rcd of lc_stt list
 type ope =
   | Ascii of string
-  | Calc of (lc_stt list)
+  | Calc of (lc_stt)
   | Prn
   | Anh
   | Rpl
@@ -22,7 +23,7 @@ type ope =
 type command = {
   mutable src : string list;
   mutable dest : string list;
-  mutable ope : ope
+  mutable ope : ope list
 }
 type stt = lc_stt Stt.t
 exception Error of string
@@ -41,7 +42,7 @@ let rec string_of_lc_stt x =
   | Plus (a,b) -> (string_of_lc_stt a)^" + "^(string_of_lc_stt b)
   | Mult (a,b) -> (string_of_lc_stt a)^" * "^(string_of_lc_stt b)
   | Val i -> "val:"^(string_of_int i)
-
+  | Rcd l -> string_of_list string_of_lc_stt l
 let (gl_st:stt) = Stt.empty
 let new_stt () = Stt.empty
 
@@ -59,7 +60,8 @@ let calc (l: (string*lc_stt) list) (c:lc_stt) : lc_stt =
         | Cst n -> n
         | _ -> raise error )
     | In _ -> raise error
-    | Out _ -> raise error in
+    | Out _ -> raise error
+    | Rcd _ -> raise error (* Rcd (List.map (calc l) l) *) in
   Cst (calc_int c)
 
 let consume (k:string) (m:stt) : (lc_stt * stt) =
@@ -119,29 +121,30 @@ let assgn_dst (dst:string list) (r:lc_stt list) : ((string*lc_stt) list )=
     pnt (string_of_list (fun x -> x) dst);
     pnt (string_of_list string_of_lc_stt r);
     raise @@ Error "error:assgn_dst"
-let operate (l:(string*lc_stt) list) (o:ope) : (lc_stt list) =
+let operate (l:(string*lc_stt) list) (o:ope) : (lc_stt) =
   match o with
-  | Ascii _ -> []
-  | Calc c -> List.map (calc l) c
+  | Ascii _ -> In "Ascii"
+  | Calc c -> calc l c
   | Prn -> if l=[]
-    then [Out "x";In "x"]
+    then Rcd [Out "x";In "x"]
     else raise @@ Error "error:operate:Prn"
   | Anh -> if (List.length l)=2
-    then []
+    then Rcd []
     else raise @@ Error "error:operate:Anh"
   | Rpl ->
     if (List.length l)=1
-    then [In "repl";In "repl"]
+    then Rcd [In "repl";In "repl"]
     else raise @@ Error "error:operate:Rpl"
   | Spp ->
     if (List.length l)=2
-    then [In "spp"]
+    then Rcd [In "spp"]
     else raise @@ Error "error:operate:Spp"
+
 let exec_command c st =
   try
     let (src,dst,op) = (c.src,c.dest,c.ope) in
     let (l,st') = consumes src st in
-    let result = assgn_dst dst (operate l op) in
+    let result = assgn_dst dst (List.map (operate l) op) in
     let st'' = creates result st' in
     st''
   with Invalid_argument s -> raise @@ Error s
